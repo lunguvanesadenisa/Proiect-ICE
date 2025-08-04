@@ -4,7 +4,6 @@ library(rpart.plot)
 library(pROC)
 library(caret)
 
-# Citirea fișierului Excel
 educatie <- read_excel("ICE.xlsx")
 
 # Preprocesare
@@ -24,7 +23,7 @@ arbore <- rpart(`Nivel educațional general al țării` ~ ., data = train, metho
 # Vizualizarea arborelui
 rpart.plot(arbore, extra = 104)
 
-# Predictii și matrice de confuzie
+# Predicții și matrice de confuzie
 predictii <- predict(arbore, test, type = "class")
 print(paste("Eroare clasificare:", mean(predictii != test$`Nivel educațional general al țării`)))
 #matricea de confuzie
@@ -39,7 +38,7 @@ cp_min <- arbore$cptable[which.min(arbore$cptable[,"xerror"]),"CP"]
 cp_min
 arbore_curatat <- prune(arbore, cp = cp_min)
 
-# Vizualizarea arborelui curatat
+# Vizualizarea arborelui curățat
 rpart.plot(arbore_curatat, extra = 104)
 
 # Evaluare pe arborele curățat
@@ -49,13 +48,12 @@ print(paste("Eroare clasificare arbore curățat:", mean(predictii2 != test$`Niv
 library(pROC)
 library(ggplot2)
 
-# Obținem probabilitățile pentru toate clasele
+# Obținem probabilitățile pentru toate predicțiile
 predictii_prob <- predict(arbore, test, type = "prob")
 
-# Listă pentru a stoca curbele ROC
 roc_list <- list()
 
-# Generăm curbe ROC pentru fiecare clasă (One-vs-Rest)
+# Curbe ROC pentru fiecare clasă (One-vs-Rest)
 for (clasa in colnames(predictii_prob)) {
   roc_obj <- roc(
     response = as.numeric(test$`Nivel educațional general al țării` == clasa),
@@ -64,12 +62,12 @@ for (clasa in colnames(predictii_prob)) {
   roc_list[[clasa]] <- roc_obj
 }
 
-# Plotăm toate curbele ROC
 plot(roc_list[[1]], col = "red", main = "Curbe ROC One-vs-Rest")
 for (i in 2:length(roc_list)) {
   lines(roc_list[[i]], col = i + 1)  # Culori diferite pentru fiecare clasă
 }
 legend("bottomright", legend = names(roc_list), col = 2:(length(roc_list)+1), lty = 1)
 
-# Afișăm AUC pentru fiecare clasă
+# Afișăm AUC pentru fiecare predicție
 sapply(roc_list, auc)
+
